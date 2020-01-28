@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-imageValues.py
+imagepath.py
 
 Seperate image into parts.
 Get image values
@@ -28,12 +28,20 @@ class Image(object):
     IMAGE_DICT = None
 
     def __init__(self, image=None):
+        """
+        Init the inage class.
+
+        It sets up all basic variables for the input image.
+
+        :params image: path to an image file
+        :type image: str
+        """
         # Init internal vars
         self.image_path = None
         self.image_name = None
-        self.name = None 
+        self.name = None
         self.ext = None
-        
+
         # Assign init parm
         self.IMAGE = image
 
@@ -48,7 +56,12 @@ class Image(object):
 
     # REGEX FUNCTIONS
     def _regex_version(self):
-        """@re_major_version, re_prefix_major_version, re_prefix_major_minor_version"""
+        """
+        Create version regex string.
+
+        :return: re_major_version, re_prefix_major_version, re_prefix_major_minor_version
+        :rtype: tuple(str)
+        """
 
         re_major_version = r'^([v|V])(\d+)'
         re_prefix_major_version = r'([.|_|-])([v|V])(\d+)*'
@@ -56,15 +69,24 @@ class Image(object):
         return re_major_version, re_prefix_major_version, re_prefix_major_minor_version
 
     def _regex_frame(self):
-        """@re_frame, re_frame_only"""
+        """
+        Create frame regex string
+
+        :return: re_frame, re_frame_only
+        :rtype: tuple(str)
+        """
 
         re_frame = r'([.|_|-])((\d+)|(%0\dd)|(#+))\Z'
         re_frame_only = r'^((\d+)|(%0\dd)|(#+))\Z'
         return re_frame, re_frame_only
 
     def _re_compile_version(self):
-        """Compile re object
-        @re_major_version, re_prefix_major_version, re_prefix_major_minor_version"""
+        """
+        Compile re version object.
+
+        :return: re_major_version, re_prefix_major_version, re_prefix_major_minor_version
+        :rtype: tuple(re object)
+        """
 
         re_major_version = re.compile(self._regex_version()[0])
         re_prefix_major_version = re.compile(self._regex_version()[1])
@@ -72,8 +94,12 @@ class Image(object):
         return re_major_version, re_prefix_major_version, re_prefix_major_minor_version
 
     def _re_compile_frame(self):
-        """Compile re object
-        @re_frame, re_frame_only"""
+        """
+        Compile re frame object.
+
+        :return: re_frame, re_frame_only
+        :rtype: tuple(re object)
+        """
 
         re_frame = re.compile(self._regex_frame()[0])
         re_frame_only = re.compile(self._regex_frame()[1])
@@ -81,25 +107,41 @@ class Image(object):
 
     # HELPER FUNCTIONS
     def _set_padded_number(self, number, padding):
-        """@padded number string"""
+        """
+        Set padded number.
+
+        :params number:
+        :type number: int
+        :params padding:
+        :type padding: int
+        :return: padded number string
+        :rtype: str
+        """
         return '%0{}d'.format(padding) % number
 
     # FUNCTIONS
     def _get_basic_parts(self):
-        """get path, name, ext
+        """
+        Get path, name, ext
 
-        @[dirname, name, ext]"""
+        :return: [dirname, name, ext]
+        :rtype: list(str)
+        """
 
         self.image_path = os.path.dirname(self.IMAGE)
         self.image_name = os.path.basename(self.IMAGE)
         self.name, self.ext = os.path.splitext(self.image_name)
 
     def _split_name(self):
-        """split image into base name, prefix & frame part
+        """
+        Split image into base name, prefix & frame part
 
-        @[basename, frame_prefix, frame]
-        > frame_parts=True:
-        @[basename, frame_prefix, frame, frame_digit, frame_notation, frame_hash]"""
+        :return: [basename, frame_prefix, frame]
+                 or if frame_parts=True:
+                 [basename, frame_prefix, frame,
+                 frame_digit, frame_notation, frame_hash]
+        :rtype: list
+        """
 
         re_frame, re_frame_only = self._re_compile_frame()
         self._get_basic_parts()
@@ -121,18 +163,25 @@ class Image(object):
 
         return name_list
 
-
     def get_b_name(self):
-        """get image base name
+        """
+        Get image base name.
 
-        @base name"""
+        :return: base name
+        :rtype: str
+        """
 
         return self._name_list[0]
 
     def set_b_name(self, new_name):
-        """set image base name
+        """
+        Set image base name.
 
-        @image"""
+        :params new_name: base name to use for the rename
+        :type new_name: str
+        :return: image
+        :rtype: str
+        """
 
         name_list = self._name_list
         name_list = ['' if v is None else v for v in name_list]
@@ -144,17 +193,19 @@ class Image(object):
         return self.IMAGE
 
     def get_frame(self):
-        """ get image frame values
-
-        @frame_dict = {'frame_prefix':  frame_prefix,
-                       'frame':         frame,
-                       'frame_padding': padding,
-                       'frame_digit':   frame_digit,
-                       'frame_notation':frame_notation,
-                       'frame_hash':    frame_hash
-                      }
+        """
+        Get image frame values.
 
         Option name=True adds name value pair to dict.
+
+        :return: frame_dict = {'frame_prefix':  frame_prefix,
+                               'frame':         frame,
+                               'frame_padding': padding,
+                               'frame_digit':   frame_digit,
+                               'frame_notation':frame_notation,
+                               'frame_hash':    frame_hash
+                              }
+        :rtype: dict
         """
 
         frame_prefix, frame, frame_digit, frame_notation, frame_hash = None, None, None, None, None
@@ -191,11 +242,16 @@ class Image(object):
         return frame_dict
 
     def set_frame(self, new_frame, prefix=None):
-        """ set image frame value
+        """
+        Set image frame value. Can also set the prefix if given.
 
-        input frame as string
-
-        @image"""
+        :params new_frame: new frame number
+        :type new_frame: str
+        :params prefix: character to use before the frame e.g. _
+        :type prefix: str
+        :return: image
+        :rtype: str
+        """
 
         new_frame = str(new_frame)
         re_frame, re_frame_only = self._re_compile_frame()
@@ -238,15 +294,20 @@ class Image(object):
         return self.IMAGE
 
     def get_version(self, major_minor=False):
-        """Get all version strings
+        """
+        Get all version strings.
 
-        @version_dict = {'version_folder_level':  version_folder_level,
-                         'version_folder_prefix': version_folder_prefix,
-                         'version_folder':        version_folder,
-                         'version_prefix':        version_prefix,
-                         'version':               version,
-                         'version_sep':           version_sep
-                        }
+        :params major_minor: Set to True if the image is using two style version
+                             convention; default to False
+        :type major_minor: bool
+        :return: version_dict = {'version_folder_level':  version_folder_level,
+                                 'version_folder_prefix': version_folder_prefix,
+                                 'version_folder':        version_folder,
+                                 'version_prefix':        version_prefix,
+                                 'version':               version,
+                                 'version_sep':           version_sep
+                                }
+        :rtype: dict
         """
 
         re_version_all = self._re_compile_version()
@@ -261,12 +322,29 @@ class Image(object):
         version_sep = None
 
         def version_result(value):
+            """
+            Inside method fetching version from input value.
+
+            :param value: image base name
+            :type value: str
+            :return: version_prefix, version
+            :rtype: tuple(str)
+            """
             re_version_result = re_version.search(value)
             version_prefix = ''.join(re_version_result.group(1, 2))
             version = re_version_result.group(3)
             return version_prefix, version
 
         def version_only_result(value):
+            """
+            Inside method fetching version from input value
+            if the name may only consist of the version.
+
+            :param value: image base name
+            :type value: str
+            :return: version_prefix, version
+            :rtype: tuple(str)
+            """
             re_version_result = re_version_only.search(value)
             version_prefix = re_version_result.group(1)
             version = re_version_result.group(2)
@@ -314,12 +392,25 @@ class Image(object):
 
         return version_dict
 
+    def set_version(self, new_version, set_folder=True, major_minor=False,
+                    prefix=None, sep=None):
+        """
+        Set the given version.
 
-    def set_version(self, new_version, set_folder=True, major_minor=False, prefix=None, sep=None):
-        """set the given version
-        Input version as string
-
-        @image"""
+        :params new_version: version as a string without the prefix
+        :type new_version: str
+        :params set_folder: Set the version in the folder
+        :type set_folder: bool
+        :params major_minor: Set to True if the version is using
+                             major, minor version style
+        :type major_minor: bool
+        :params prefix: character to use before the version
+        :type prefix: str
+        :params sep: separator to use for major, minor version style
+        :type sep: str
+        :return: image
+        :rtype: str
+        """
 
         # Init self.regex
         re_version_all = self._re_compile_version()
@@ -389,25 +480,29 @@ class Image(object):
             error_msg = 'Wrong input. Error: {}'.format(err)
             raise ValueError(error_msg)
 
-
     def get_image_values(self, major_minor=False):
-        """ get all image part values
+        """
+        Get all image part values.
 
-        @image_dict = {'path':                  image_path,
-                       'name':                  b_name,
-                       'ext':                   ext,
-                       'version_folder_level':  version_folder_level,
-                       'version_folder_prefix': version_folder_prefix,
-                       'version_folder':        version_folder,
-                       'version_prefix':        version_prefix,
-                       'version':               version,
-                       'version_sep':           version_sep,
-                       'frame_prefix':          frame_prefix,
-                       'frame':                 frame,
-                       'frame_padding':         padding,
-                       'frame_notation':        frame_notation,
-                       'frame_hash':            frame_hash
-                      }
+        :params major_minor: Set to True if the version is using
+                             major, minor version style
+        :type major_minor: bool
+        :return: image_dict = {'path':                  image_path,
+                               'name':                  b_name,
+                               'ext':                   ext,
+                               'version_folder_level':  version_folder_level,
+                               'version_folder_prefix': version_folder_prefix,
+                               'version_folder':        version_folder,
+                               'version_prefix':        version_prefix,
+                               'version':               version,
+                               'version_sep':           version_sep,
+                               'frame_prefix':          frame_prefix,
+                               'frame':                 frame,
+                               'frame_padding':         padding,
+                               'frame_notation':        frame_notation,
+                               'frame_hash':            frame_hash
+                              }
+        :rtype: dict
         """
 
         # FRAME
@@ -434,4 +529,3 @@ class Image(object):
                      }
 
         return image_dict
-
