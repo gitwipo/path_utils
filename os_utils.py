@@ -80,7 +80,7 @@ def walk2(top, topdown=True, onerror=None, followlinks=False, level=False,
 def scan_folder(path, search_pattern, followlinks=False, level=False,
                 excludes=None):
     """
-    Scan a given root folder and log all found files
+    Scan a given root folder and yield all found files
 
     :param path: <string>; search root path
     :param search_pattern: <regex string>
@@ -106,5 +106,5 @@ def scan_folder(path, search_pattern, followlinks=False, level=False,
     for dirpath, dirnames, filenames in walk_gen:
         if filenames:
             for filename in filenames:
-                if re_search.match(filename):
+                if re_search.search(filename):
                     yield dirpath, filename
