@@ -75,14 +75,16 @@ class Image(object):
         """
         Create version regex string.
 
-        :return: re_major_version, re_prefix_major_version, re_prefix_major_minor_version
+        :return: re_major_version, re_prefix_major_version,
+                 re_prefix_major_minor_version
         :rtype: tuple(str)
         """
 
         re_major_version = r'^([v|V])(\d+)'
         re_prefix_major_version = r'([.|_|-])([v|V])(\d+)*'
         re_prefix_major_minor_version = r'([.|_|-])([v|V])(\d+)([.|_|-])(\d+)'
-        return re_major_version, re_prefix_major_version, re_prefix_major_minor_version
+        return (re_major_version, re_prefix_major_version,
+                re_prefix_major_minor_version)
 
     def _regex_frame(self):
         """
@@ -100,14 +102,16 @@ class Image(object):
         """
         Compile re version object.
 
-        :return: re_major_version, re_prefix_major_version, re_prefix_major_minor_version
+        :return: re_major_version, re_prefix_major_version,
+                 re_prefix_major_minor_version
         :rtype: tuple(re object)
         """
 
         re_major_version = re.compile(self._regex_version()[0])
         re_prefix_major_version = re.compile(self._regex_version()[1])
         re_prefix_major_minor_version = re.compile(self._regex_version()[2])
-        return re_major_version, re_prefix_major_version, re_prefix_major_minor_version
+        return (re_major_version, re_prefix_major_version,
+                re_prefix_major_minor_version)
 
     def _re_compile_frame(self):
         """
@@ -173,7 +177,8 @@ class Image(object):
                     name_list.extend([None, None])
 
             name_list = name_list[:6]
-        except IndexError: pass
+        except IndexError:
+            pass
 
         name_list = [None if v is '' else v for v in name_list]
 
@@ -224,9 +229,14 @@ class Image(object):
         :rtype: dict
         """
 
-        frame_prefix, frame, frame_digit, frame_notation, frame_hash = None, None, None, None, None
+        frame_prefix, frame = None, None
+        frame_digit, frame_notation, frame_hash = None, None, None
         if self._name_list[2]:
-            frame_prefix, frame, frame_digit, frame_notation, frame_hash = self._name_list[1:]
+            frame_prefix = self._name_list[1]
+            frame = self._name_list[2]
+            frame_digit = self._name_list[3]
+            frame_notation = self._name_list[4]
+            frame_hash = self._name_list[5]
 
         # GET FRAME PADDING
         padding = None
@@ -337,7 +347,7 @@ class Image(object):
         version = None
         version_sep = None
 
-        def version_result(value):
+        def get_version_result(value):
             """
             Inside method fetching version from input value.
 
@@ -351,7 +361,7 @@ class Image(object):
             version = re_version_result.group(3)
             return version_prefix, version
 
-        def version_only_result(value):
+        def get_version_only_result(value):
             """
             Inside method fetching version from input value
             if the name may only consist of the version.
@@ -373,30 +383,35 @@ class Image(object):
                 version_prefix = ''.join(re_version_result_image.group(1, 2))
                 version = re_version_result_image.group(3, 5)
                 version_sep = re_version_result_image.group(4)
-            except AttributeError: pass
+            except AttributeError:
+                pass
         else:
             try:
-                version_prefix, version = version_result(self.name)
+                version_prefix, version = get_version_result(self.name)
             except AttributeError:
                 try:
-                    version_prefix, version = version_only_result(self.name)
-                except AttributeError: pass
+                    version_prefix, version = get_version_only_result(self.name)
+                except AttributeError:
+                    pass
 
         # Get folder version
         level = 1
         while level < len(self.image_path.split(os.sep))-1:
             image_folder = self.image_path.split(os.sep)[-level]
             try:
-                version_folder_prefix, version_folder = version_result(image_folder)
+                version_folder_prefix, version_folder = get_version_result(image_folder)
             except AttributeError:
                 try:
-                    version_folder_prefix, version_folder = version_only_result(image_folder)
-                except AttributeError: pass
+                    version_folder_prefix, version_folder = get_version_only_result(image_folder)
+                except AttributeError:
+                    pass
 
-            if version_folder: break
+            if version_folder:
+                break
             level += 1
 
-        if not version_folder: level = None
+        if not version_folder:
+            level = None
 
         version_dict = {'version_folder_level':  level,
                         'version_folder_prefix': version_folder_prefix,
@@ -444,9 +459,10 @@ class Image(object):
         version_sep = version_dict['version_sep']
 
         if version_folder_level > 1:
-            image_root = os.sep.join(self.image_path.split(os.sep)[:-(version_folder_level)])
-            image_folder = self.image_path.split(os.sep)[-version_folder_level]
-            sub_folder = os.sep.join(self.image_path.split(os.sep)[-(version_folder_level-1):])
+            folder_split = self.image_path.split(os.sep)
+            image_root = os.sep.join(folder_split[:-(version_folder_level)])
+            image_folder = folder_split[-version_folder_level]
+            sub_folder = os.sep.join(folder_split[-(version_folder_level-1):])
         else:
             image_root = os.path.dirname(self.image_path)
             image_folder = os.path.basename(self.image_path)
@@ -466,14 +482,18 @@ class Image(object):
             if version:
                 if major_minor:
                     if isinstance(new_version, (list, tuple)):
-                        self.name = re_major_minor_version.sub(version_prefix + str(new_version[0]) + version_sep + str(new_version[1]), self.name)
+                        substition = version_prefix + str(new_version[0]) + version_sep + str(new_version[1])
+                        self.name = re_major_minor_version.sub(substition, self.name)
                     else:
-                        self.name = re_major_minor_version.sub(version_prefix + str(new_version), self.name)
+                        substition = version_prefix + str(new_version)
+                        self.name = re_major_minor_version.sub(substition, self.name)
                 else:
                     if re_version.search(self.name):
-                        self.name = re_version.sub(version_prefix + str(new_version), self.name)
+                        substition = version_prefix + str(new_version)
+                        self.name = re_version.sub(substition, self.name)
                     elif re_version_only.search(self.name):
-                        self.name = re_version_only.sub(version_prefix + str(new_version), self.name)
+                        substition = version_prefix + str(new_version)
+                        self.name = re_version_only.sub(substition, self.name)
 
             # Set version in folder
             if set_folder:
@@ -481,9 +501,11 @@ class Image(object):
                     new_version = new_version[0]
                 if version_folder:
                     if re_version.search(image_folder):
-                        image_folder = re_version.sub(version_folder_prefix + str(new_version), image_folder)
+                        substition = version_folder_prefix + str(new_version)
+                        image_folder = re_version.sub(substition, image_folder)
                     elif re_version_only.search(image_folder):
-                        image_folder = re_version_only.sub(version_folder_prefix + str(new_version), image_folder)
+                        substition = version_folder_prefix + str(new_version)
+                        image_folder = re_version_only.sub(substition, image_folder)
 
             # Generate image string
             self.image_path = os.path.join(image_root, image_folder, sub_folder)
