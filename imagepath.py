@@ -290,7 +290,8 @@ class Image(object):
         if not re_frame_only.search(new_frame):
             parm = 'new_frame'
             value = new_frame
-            error_msg = '{} \"{}\" must be given as frame hash/frame notation/digit.'.format(parm, value)
+            error_msg = '{} \"{}\" must be given as frame hash/frame,\
+                         notation/digit.'.format(parm, value)
             raise ValueError(error_msg)
         elif prefix and not isinstance(prefix, str):
             parm = 'prefix'
@@ -482,7 +483,9 @@ class Image(object):
             if version:
                 if major_minor:
                     if isinstance(new_version, (list, tuple)):
-                        substition = version_prefix + str(new_version[0]) + version_sep + str(new_version[1])
+                        sub_major = version_prefix + str(new_version[0])
+                        sub_minor = version_sep + str(new_version[1])
+                        substition = sub_major + sub_minor
                         self.name = re_major_minor_version.sub(substition, self.name)
                     else:
                         substition = version_prefix + str(new_version)
